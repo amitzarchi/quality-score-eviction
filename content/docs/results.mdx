@@ -1,0 +1,62 @@
+---
+title: Results
+description: Performance evaluation results comparing Quality Score Eviction Policy against baseline memory policies.
+---
+
+import { CacheBenchmarkChart } from '@/components/cache-benchmark-chart';
+
+This section presents the performance evaluation results of our proposed Quality Score Eviction Policy compared to the baseline memory policies (LRU, LFU, FIFO, RR) across different experimental configurations.
+
+## Cache Hit Rate Analysis
+
+The primary metric for evaluating cache performance is the **hit rate** - the percentage of requests served from the cache. Higher hit rates indicate better cache performance, as they reduce the need for expensive LLM API calls.
+
+Our experiments evaluated cache performance across:
+
+- **270 unique configurations** from our grid search
+- **Three repetition scenarios**: High, Low, and Mixed
+- **Three dataset sizes**: 500, 1000, and 3000 questions
+- **Various cache sizes** relative to dataset size
+- **Different Quality Score parameters**: learning rates and weight combinations
+
+## Interactive Benchmark Results
+
+<CacheBenchmarkChart />
+
+## Key Findings
+
+### Performance Across Repetition Scenarios
+
+- **High Repetition**: The Quality Score policy demonstrates significant advantages when queries have high semantic overlap, effectively identifying and retaining semantically similar content.
+
+- **Low Repetition**: Even with minimal query repetition, the Quality Score policy maintains competitive performance while building a foundation for future semantic matches.
+
+- **Mixed Repetition**: In realistic mixed workloads, the Quality Score policy adapts dynamically, showing consistent improvements over baseline policies.
+
+### Cache Size Impact
+
+The results show that the Quality Score policy's advantage becomes more pronounced as cache size increases relative to the dataset size. This suggests that the policy's ability to make intelligent retention decisions becomes more valuable when there's more flexibility in what to cache.
+
+### Parameter Sensitivity
+
+The benchmark allows exploration of different Quality Score parameters:
+
+- **Learning Rate (α)**: Controls how quickly the quality score adapts to new similarity observations
+- **Weight Combinations**: Balance between quality, recency, and frequency components
+
+The interactive chart above enables detailed analysis of how these parameters affect performance across different experimental conditions.
+
+## Statistical Significance
+
+The comprehensive grid search across 270 configurations provides robust statistical evidence for the Quality Score policy's effectiveness. The results demonstrate consistent improvements across diverse workload characteristics and cache configurations.
+
+## Comparative Analysis
+
+When compared to traditional eviction policies:
+
+- **vs. LRU**: Quality Score policy shows superior performance by considering semantic relevance alongside recency
+- **vs. LFU**: Outperforms by incorporating similarity scores rather than just access frequency
+- **vs. FIFO**: Significant improvements through intelligent retention decisions rather than simple age-based eviction
+- **vs. RR**: Consistent advantages over random eviction through learned quality assessment
+
+The interactive visualization above allows for detailed exploration of these comparisons across all experimental parameters.

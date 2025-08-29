@@ -1,0 +1,27 @@
+---
+title: Extension Design
+description: Quality Score Eviction Policy design and algorithm iplementation
+---
+
+
+While traditional strategies are effective in general-purpose systems, these approaches overlook the **semantic relevance** of cached content. This can reduce caching effectiveness in LLM applications, where users often submit similar prompts that could be handled more efficiently by reusing existing responses.
+
+To address this issue, we introduce the **Quality Score Eviction Policy**, an extension to the GPTCache framework that incorporates a learned notion of quality into eviction decisions. Our policy aims to retain entries that not only are frequently used or recently accessed, but also demonstrate high semantic similarity to user queries over time. This change seeks to improve hit rates and lower latency for repeated or paraphrased queries while adapting dynamically to usage patterns.
+
+## Algorithm Implementation
+
+The Quality Score Eviction Policy uses a composite score to decide which cache items to evict. This score is a weighted combination of:
+
+*   **Quality Score**: An exponentially-smoothed average of similarity scores from past cache hits. This tracks how well an item matches new queries over time.
+*   **Recency**: Based on the timestamp of last access.
+*   **Frequency**: Count of how often the entry was accessed.
+
+Eviction proceeds by removing the entry with the **lowest composite score**, prioritizing retention of items that are useful in practice, not just frequently or recently accessed.
+
+The core update rule for quality is:
+
+```
+quality_t = (1-alpha) * quality_{t-1} + alpha * similarity
+```
+
+Where `quality_t` is the quality score at time t, `similarity` is the similarity score, calculating by the highest similarity to any item in the cache, and `alpha` is the learning rate, which is a hyperparameter.

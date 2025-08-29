@@ -1,13 +1,33 @@
 ---
-title: Hello World
-description: Your first document
+title: Introduction
+description: Quality Score Eviction Policy for LLM Cache Optimization
 ---
 
-Welcome to the docs! You can start writing documents in `/content/docs`.
+Yossi Ram | Amit Zarchi | Rotem Cohen
 
-## What is Next?
+## Introduction
 
-<Cards>
-  <Card title="Learn more about Next.js" href="https://nextjs.org/docs" />
-  <Card title="Learn more about Fumadocs" href="https://fumadocs.vercel.app" />
-</Cards>
+In recent years, applications powered by large language models (LLMs) have grown rapidly and become widely used. However, as LLM-based applications scale and attract more users, the expense of API calls can rise sharply. Minimizing compute power is crucial. As Sam Altman said, '[Compute will become the most precious thing in the world](https://www.youtube.com/watch?v=r2UmOBrrRK8)'. Furthermore, response times can degrade during peak demand, leading to a frustrating user experience.
+
+## Problem Statement
+
+The core problem is that traditional caching mechanisms, designed for general-purpose systems, are not optimized for the unique characteristics of LLM workloads. These systems often evict cached items based on simple heuristics like "Least Recently Used" (LRU), which may not be the most effective strategy when dealing with semantically similar, but not identical, prompts. This can lead to suboptimal cache hit rates, increased latency, and higher operational costs.
+
+## Related Work
+
+The concept of caching is not new. Traditional caching techniques, such as LRU, LFU (Least Frequently Used), and FIFO (First-In, First-Out), have been extensively studied and are widely used in various computing systems. However, these policies are often insufficient for LLM applications.
+
+The most relevant work in this area is the GPTCache framework itself. As described by Fu and Feng (2023), GPTCache utilizes a vector-based approach to identify and serve semantically similar prompts from the cache. This is a significant improvement over traditional caching methods. However, the default eviction policies in GPTCache are still based on the traditional LRU and LFU models, which do not fully leverage the semantic information available.
+
+## Research Question
+
+This project seeks to answer the following research question: Can a novel eviction policy that incorporates a "quality score" based on semantic similarity lead to a measurable improvement in cache performance for LLM applications, compared to traditional eviction policies?
+
+## Outline of the Report
+
+This report is structured as follows:
+*   **Section 2: Extension Design** will detail the proposed Quality Score Eviction Policy.
+*   **Section 3: Experimental Setup** will describe the methodology used to evaluate the proposed policy.
+*   **Section 4: Results** will present the results of the evaluation.
+*   **Section 5: Discussion** will analyze the results and discuss their implications.
+*   **Section 6: Conclusion & Future Work** will summarize the findings and suggest directions for future research.
