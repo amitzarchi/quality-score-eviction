@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 
@@ -80,12 +80,51 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function CacheBenchmarkChart() {
-  const [selectedRepetition, setSelectedRepetition] = useState<"HIGH" | "LOW" | "MIXED">("HIGH")
+  const [selectedRepetition, setSelectedRepetition] = useState<"HIGH" | "LOW" | "MIXED">("MIXED")
   const [selectedQuestions, setSelectedQuestions] = useState<number>(500)
   const [selectedLearningRate, setSelectedLearningRate] = useState<number>(0.5)
-  const [selectedWeights, setSelectedWeights] = useState<"0.6,0.3,0.1" | "0.8,0.1,0.1">("0.6,0.3,0.1")
+  const [selectedWeights, setSelectedWeights] = useState<"0.6,0.3,0.1" | "0.8,0.1,0.1">("0.8,0.1,0.1")
 
   const data = benchmarkData as BenchmarkResult[]
+
+  // Persist selections in localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("cache-benchmark-filters")
+      if (!stored) return
+      const parsed = JSON.parse(stored) as Partial<{
+        repetition: "HIGH" | "LOW" | "MIXED"
+        questions: number
+        learningRate: number
+        weights: "0.6,0.3,0.1" | "0.8,0.1,0.1"
+      }>
+
+      if (parsed.repetition === "HIGH" || parsed.repetition === "LOW" || parsed.repetition === "MIXED") {
+        setSelectedRepetition(parsed.repetition)
+      }
+      if (parsed.questions === 500 || parsed.questions === 1000 || parsed.questions === 3000) {
+        setSelectedQuestions(parsed.questions)
+      }
+      if (parsed.learningRate === 0.3 || parsed.learningRate === 0.5 || parsed.learningRate === 0.7) {
+        setSelectedLearningRate(parsed.learningRate)
+      }
+      if (parsed.weights === "0.6,0.3,0.1" || parsed.weights === "0.8,0.1,0.1") {
+        setSelectedWeights(parsed.weights)
+      }
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    try {
+      const payload = {
+        repetition: selectedRepetition,
+        questions: selectedQuestions,
+        learningRate: selectedLearningRate,
+        weights: selectedWeights,
+      }
+      localStorage.setItem("cache-benchmark-filters", JSON.stringify(payload))
+    } catch {}
+  }, [selectedRepetition, selectedQuestions, selectedLearningRate, selectedWeights])
 
   const chartData = useMemo(() => {
     // Get unique max_size values for the selected filters
@@ -171,31 +210,34 @@ export function CacheBenchmarkChart() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Cache Eviction Policy Benchmark</CardTitle>
-        <CardDescription>
-          Comparing Quality Score eviction against baseline policies (LRU, LFU, FIFO, RR)
-        </CardDescription>
+        <CardTitle>Hit Rate Comparison</CardTitle>
         
         {/* Filter Controls */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-4">
           <div className="space-y-2">
-            <Label htmlFor="repetition">Degree of Repetition</Label>
+            <Label htmlFor="repetition" className="text-sm font-medium">
+              <span className="hidden sm:inline">Degree of Repetition</span>
+              <span className="sm:hidden">Repetition</span>
+            </Label>
             <Select value={selectedRepetition} onValueChange={(value: "HIGH" | "LOW" | "MIXED") => setSelectedRepetition(value)}>
-              <SelectTrigger id="repetition">
+              <SelectTrigger id="repetition" className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="MIXED">MIXED</SelectItem>
                 <SelectItem value="HIGH">HIGH</SelectItem>
                 <SelectItem value="LOW">LOW</SelectItem>
-                <SelectItem value="MIXED">MIXED</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="questions">Number of Questions</Label>
+            <Label htmlFor="questions" className="text-sm font-medium">
+              <span className="hidden sm:inline">Number of Questions</span>
+              <span className="sm:hidden">Questions</span>
+            </Label>
             <Select value={selectedQuestions.toString()} onValueChange={(value) => setSelectedQuestions(Number(value))}>
-              <SelectTrigger id="questions">
+              <SelectTrigger id="questions" className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -207,9 +249,9 @@ export function CacheBenchmarkChart() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="learning-rate">Learning Rate</Label>
+            <Label htmlFor="learning-rate" className="text-sm font-medium">Learning Rate</Label>
             <Select value={selectedLearningRate.toString()} onValueChange={(value) => setSelectedLearningRate(Number(value))}>
-              <SelectTrigger id="learning-rate">
+              <SelectTrigger id="learning-rate" className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -221,14 +263,23 @@ export function CacheBenchmarkChart() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="weights">Weights (Q,R,F)</Label>
+            <Label htmlFor="weights" className="text-sm font-medium">
+              <span className="hidden sm:inline">Weights (Q,R,F)</span>
+              <span className="sm:hidden">Weights</span>
+            </Label>
             <Select value={selectedWeights} onValueChange={(value: "0.6,0.3,0.1" | "0.8,0.1,0.1") => setSelectedWeights(value)}>
-              <SelectTrigger id="weights">
+              <SelectTrigger id="weights" className="h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="0.6,0.3,0.1">(0.6, 0.3, 0.1)</SelectItem>
-                <SelectItem value="0.8,0.1,0.1">(0.8, 0.1, 0.1)</SelectItem>
+                <SelectItem value="0.6,0.3,0.1">
+                  <span className="hidden sm:inline">(0.6, 0.3, 0.1)</span>
+                  <span className="sm:hidden">0.6,0.3,0.1</span>
+                </SelectItem>
+                <SelectItem value="0.8,0.1,0.1">
+                  <span className="hidden sm:inline">(0.8, 0.1, 0.1)</span>
+                  <span className="sm:hidden">0.8,0.1,0.1</span>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -241,8 +292,10 @@ export function CacheBenchmarkChart() {
             accessibilityLayer
             data={chartData}
             margin={{
-              left: 12,
+              top: 12,
+              left: -15,
               right: 12,
+              bottom: 12,
             }}
           >
             <CartesianGrid vertical={false} />
@@ -252,20 +305,18 @@ export function CacheBenchmarkChart() {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `${value}`}
+              label={{ value: 'Max Cache Items', position: 'insideBottom', offset: -10 }}
             />
             <YAxis
               tickLine={false}
               axisLine={false}
               tickMargin={8}
               tickFormatter={(value) => `${(value * 100).toFixed(0)}%`}
+              domain={['dataMin - 0.1', 1]}
             />
             <ChartTooltip 
               cursor={false} 
               content={<ChartTooltipContent 
-                // formatter={(value, name) => [
-                //   `${(Number(value) * 100).toFixed(1)}%`,
-                //   chartConfig[name as keyof typeof chartConfig]?.label || name
-                // ]}
                 labelFormatter={(label) => `Hit Rate`}
               />} 
             />
@@ -321,8 +372,9 @@ export function CacheBenchmarkChart() {
                 )}
               </div>
             )}
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              Hit rate comparison across different cache sizes • {selectedRepetition} repetition • {selectedQuestions} questions
+            <div className="text-muted-foreground flex items-center gap-2 leading-none text-xs sm:text-sm">
+              <span className="hidden sm:inline">Hit rate comparison across different cache sizes • {selectedRepetition} repetition • {selectedQuestions} questions</span>
+              <span className="sm:hidden">{selectedRepetition} • {selectedQuestions} questions</span>
             </div>
           </div>
         </div>

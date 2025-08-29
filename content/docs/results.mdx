@@ -4,10 +4,12 @@ description: Performance evaluation results comparing Quality Score Eviction Pol
 ---
 
 import { CacheBenchmarkChart } from '@/components/cache-benchmark-chart';
+import { ThroughputChart } from '@/components/throughput-chart';
 
 This section presents the performance evaluation results of our proposed Quality Score Eviction Policy compared to the baseline memory policies (LRU, LFU, FIFO, RR) across different experimental configurations.
 
-## Cache Hit Rate Analysis
+
+## Hit Rate
 
 The primary metric for evaluating cache performance is the **hit rate** - the percentage of requests served from the cache. Higher hit rates indicate better cache performance, as they reduce the need for expensive LLM API calls.
 
@@ -19,44 +21,19 @@ Our experiments evaluated cache performance across:
 - **Various cache sizes** relative to dataset size
 - **Different Quality Score parameters**: learning rates and weight combinations
 
-## Interactive Benchmark Results
-
 <CacheBenchmarkChart />
 
-## Key Findings
+## Throughput
 
-### Performance Across Repetition Scenarios
+For throughput measurements, we used a mock LLM API that responds instantly rather than making actual inference calls, ensuring that the results reflect cache policy overhead rather than LLM latency.
 
-- **High Repetition**: The Quality Score policy demonstrates significant advantages when queries have high semantic overlap, effectively identifying and retaining semantically similar content.
+The following chart shows the average throughput performance (requests per second) for each cache eviction policy across all experimental configuration.
 
-- **Low Repetition**: Even with minimal query repetition, the Quality Score policy maintains competitive performance while building a foundation for future semantic matches.
+<ThroughputChart />
 
-- **Mixed Repetition**: In realistic mixed workloads, the Quality Score policy adapts dynamically, showing consistent improvements over baseline policies.
+## CPU Usage
 
-### Cache Size Impact
+During our experiments, CPU usage remained consistent across all cache eviction policies, averaging approximately **55%** throughout the testing period. 
 
-The results show that the Quality Score policy's advantage becomes more pronounced as cache size increases relative to the dataset size. This suggests that the policy's ability to make intelligent retention decisions becomes more valuable when there's more flexibility in what to cache.
+This indicates that the computational overhead of different eviction strategies does not significantly impact system resource utilization. The main contributor to CPU usage was likely the similarity models used for cache key matching rather than the eviction policies themselves, suggesting that the choice of eviction policy is primarily driven by cache performance metrics rather than computational efficiency concerns.
 
-### Parameter Sensitivity
-
-The benchmark allows exploration of different Quality Score parameters:
-
-- **Learning Rate (α)**: Controls how quickly the quality score adapts to new similarity observations
-- **Weight Combinations**: Balance between quality, recency, and frequency components
-
-The interactive chart above enables detailed analysis of how these parameters affect performance across different experimental conditions.
-
-## Statistical Significance
-
-The comprehensive grid search across 270 configurations provides robust statistical evidence for the Quality Score policy's effectiveness. The results demonstrate consistent improvements across diverse workload characteristics and cache configurations.
-
-## Comparative Analysis
-
-When compared to traditional eviction policies:
-
-- **vs. LRU**: Quality Score policy shows superior performance by considering semantic relevance alongside recency
-- **vs. LFU**: Outperforms by incorporating similarity scores rather than just access frequency
-- **vs. FIFO**: Significant improvements through intelligent retention decisions rather than simple age-based eviction
-- **vs. RR**: Consistent advantages over random eviction through learned quality assessment
-
-The interactive visualization above allows for detailed exploration of these comparisons across all experimental parameters.

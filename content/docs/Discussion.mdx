@@ -1,0 +1,55 @@
+---
+title: Discussion
+description: Key insights from the results across hit rate, throughput, and CPU usage.
+---
+
+This discussion distills key findings from the results, focusing on three metrics we measured: **hit rate**, **throughput**, and **CPU usage**. We also take a close look at the Mixed-500 scenario where the Quality Score policy shows its largest advantage.
+
+## Hit Rate
+
+- Overall, the Quality Score policy consistently matches or outperforms the baseline memory policies (LRU, LFU, FIFO, RR). The advantage is most pronounced for smaller cache sizes.
+- At larger cache sizes (in the 100–300 range), all policies approach high hit rates (~0.91–0.93 in Mixed datasets), so the margin narrows.
+
+### Standout case: Mixed, 500 questions
+
+- Cache size = 10: Quality Score with learning rate `0.5` and weights `(quality, recency, frequency) = (0.8, 0.1, 0.1)` achieves a hit rate of **0.428**.
+  - Baselines:
+    - LRU: 0.31 → +0.118 (≈ +38%)
+    - LFU: 0.37 → +0.058 (≈ +16%)
+    - FIFO: 0.298 → +0.130 (≈ +44%)
+    - RR: 0.31 → +0.118 (≈ +38%)
+
+- Cache size = 20: Quality Score with the same settings reaches **0.798**.
+  - Baselines:
+    - LRU: 0.64 → +0.158 (≈ +24.7%)
+    - LFU: 0.60 → +0.198 (≈ +33.0%)
+    - FIFO: 0.552 → +0.246 (≈ +44.6%)
+    - RR: 0.542 → +0.256 (≈ +47.2%)
+
+Interpretation: with constrained cache capacity, emphasizing content quality (high `quality_weight = 0.8`) and allowing the model to adapt (`learning_rate = 0.5`) helps retain higher-value entries and evict lower-value ones earlier than pure recency/frequency heuristics.
+
+## Throughput
+
+For throughput we used a mock LLM that responds instantly, isolating policy overhead from model latency. From `components/throughput-chart.tsx`:
+
+- FIFO: **5.017 req/s** (highest)
+- RR: **4.818 req/s**
+- Quality Score: **3.162 req/s**
+- LRU: **2.761 req/s**
+- LFU: **2.441 req/s**
+
+Observations:
+- Quality Score throughput is higher than LRU and LFU, indicating lightweight overhead relative to those baselines.
+- FIFO and RR are faster in raw ops/second (they do minimal bookkeeping), but they sacrifice hit rate under smaller caches compared to Quality Score.
+
+## CPU Usage
+
+- CPU utilization averaged around **55%** and remained similar across all policies.
+- The dominant CPU cost stems from similarity lookups used for cache key matching rather than the eviction logic itself. Thus, policy choice should be guided primarily by hit-rate benefits and overall serving cost, not CPU overhead.
+
+## Takeaways
+
+- In capacity-constrained settings (e.g., Mixed-500, `max_size = 10`), the Quality Score policy with `learning_rate = 0.5` and weights `(0.8, 0.1, 0.1)` provides a substantial hit-rate uplift over LRU/LFU/FIFO/RR.
+- As cache size grows, all policies converge to high hit rates, but Quality Score remains competitive without introducing notable CPU overhead. Its throughput sits between the fastest simple policies (FIFO/RR) and the heavier baselines (LRU/LFU).
+
+
