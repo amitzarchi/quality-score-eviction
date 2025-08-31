@@ -7,7 +7,7 @@ Yossi Ram | Amit Zarchi | Rotem Cohen
 
 ## Introduction
 
-In recent years, applications powered by large language models (LLMs) have grown rapidly and become widely used. However, as LLM-based applications scale and attract more users, the expense of API calls can rise sharply. Minimizing compute power is crucial. As Sam Altman said, '[Compute will become the most precious thing in the world](https://www.youtube.com/watch?v=r2UmOBrrRK8)'. Furthermore, response times can degrade during peak demand, leading to a frustrating user experience.
+In recent years, applications powered by large language models (LLMs) have grown rapidly and become widely used. However, as LLM-based applications scale and attract more users, the expense of API calls can rise sharply. Sam Altman^[1] said, Minimizing compute power is crucial. Furthermore, response times can degrade during peak demand, leading to a frustrating user experience.
 
 ## Problem Statement
 
@@ -15,9 +15,11 @@ The core problem is that traditional caching mechanisms, designed for general-pu
 
 ## Related Work
 
-The concept of caching is not new. Traditional caching techniques, such as LRU, LFU (Least Frequently Used), and FIFO (First-In, First-Out), have been extensively studied and are widely used in various computing systems. However, these policies are often insufficient for LLM applications.
+The concept of caching is not new. Traditional caching techniques, such as LRU, LFU (Least Frequently Used), and FIFO (First-In, First-Out), have been extensively studied and widely applied in various computing systems. However, these policies are often insufficient for LLM applications.
 
-The most relevant work in this area is the GPTCache framework itself. As described by Fu and Feng (2023), GPTCache utilizes a vector-based approach to identify and serve semantically similar prompts from the cache. This is a significant improvement over traditional caching methods. However, the default eviction policies in GPTCache are still based on the traditional LRU and LFU models, which do not fully leverage the semantic information available.
+Introduced by Fu and Feng (2023)^[2], GPTCache utilizes a vector-based approach to identify and serve semantically similar prompts from the cache. It was evaluated on a dataset of 30,000 sentence pairs to measure cache effectiveness in terms of hits, misses, and latency. Their evaluation showed that GPTCache achieved a high rate of positive hits while maintaining very low response times. For example, in one setup with 1,000 queries, GPTCache returned 876 cache hits with an average latency of only 0.20 seconds, while in another evaluation with 1,160 queries, it achieved 570 hits with an average latency of 0.17 seconds. These results demonstrate that GPTCache can substantially reduce response times compared to full ChatGPT inference, which often requires several seconds depending on the prompt length.
+
+Another semantics-oriented caching approach, SCALM, was introduced by Li, Jiaxing et al. (2024)^[3]. SCALM is designed specifically for LLM-based chat services. When a new query is submitted, it identifies semantically similar cached queries and groups them into clusters. Each query is then assigned a rank from 1 to 3, and when the cache reaches capacity, the query with the lowest rank is evicted, ensuring that older or less valuable queries are removed first. Compared to GPTCache, SCALM achieves an average 63% higher cache hit rate and a 77% reduction in token usage, demonstrating its effectiveness in both response reuse and computational cost savings. SCALM has very good performance, but we would like to do something slightly different, as explained in the next section.
 
 ## Research Question
 
@@ -26,8 +28,9 @@ This project seeks to answer the following research question: Can a novel evicti
 ## Outline of the Report
 
 This report is structured as follows:
-*   **Section 2: Extension Design** will detail the proposed Quality Score Eviction Policy.
-*   **Section 3: Experimental Setup** will describe the methodology used to evaluate the proposed policy.
-*   **Section 4: Results** will present the results of the evaluation.
-*   **Section 5: Discussion** will analyze the results and discuss their implications.
-*   **Section 6: Conclusion & Future Work** will summarize the findings and suggest directions for future research.
+
+- **Section 2: Extension Design** will detail the proposed Quality Score Eviction Policy.
+- **Section 3: Experimental Setup** will describe the methodology used to evaluate the proposed policy.
+- **Section 4: Results** will present the results of the evaluation.
+- **Section 5: Discussion** will analyze the results and discuss their implications.
+- **Section 6: Conclusion & Future Work** will summarize the findings and suggest directions for future research.
